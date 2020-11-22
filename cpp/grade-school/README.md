@@ -26,7 +26,7 @@ do you want?)
 Did you get the tests passing and the code clean? If you want to, these
 are some additional things you could try:
 
-- If you're working in a language with mutable data structures and your
+- If you're working in a language with mutable roster_ structures and your
   implementation allows outside code to mutate the school's internal DB
   directly, see if you can prevent this. Feel free to introduce additional
   tests.

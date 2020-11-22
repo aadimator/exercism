@@ -4695,7 +4695,7 @@ namespace Catch {
     public:
 
         Config() = default;
-        Config( ConfigData const& data );
+        Config( ConfigData const& roster_ );
         virtual ~Config() = default;
 
         std::string const& getFilename() const;
@@ -4769,7 +4769,7 @@ namespace Catch {
     class AssertionResult {
     public:
         AssertionResult() = delete;
-        AssertionResult( AssertionInfo const& info, AssertionResultData const& data );
+        AssertionResult( AssertionInfo const& info, AssertionResultData const& roster_ );
 
         bool isOk() const;
         bool succeeded() const;
@@ -6374,9 +6374,9 @@ namespace Catch {
         return reconstructedExpression;
     }
 
-    AssertionResult::AssertionResult( AssertionInfo const& info, AssertionResultData const& data )
+    AssertionResult::AssertionResult( AssertionInfo const& info, AssertionResultData const& roster_ )
     :   m_info( info ),
-        m_resultData( data )
+        m_resultData( roster_ )
     {}
 
     // Result was a success
@@ -8016,17 +8016,17 @@ namespace Catch {
 
 namespace Catch {
 
-    Config::Config( ConfigData const& data )
-    :   m_data( data ),
+    Config::Config( ConfigData const& roster_ )
+    :   m_data( roster_ ),
         m_stream( openStream() )
     {
         TestSpecParser parser(ITagAliasRegistry::get());
-        if (data.testsOrTags.empty()) {
+        if (roster_.testsOrTags.empty()) {
             parser.parse("~[.]"); // All not hidden tests
         }
         else {
             m_hasTestFilters = true;
-            for( auto const& testOrTags : data.testsOrTags )
+            for( auto const& testOrTags : roster_.testsOrTags )
                 parser.parse( testOrTags );
         }
         m_testSpec = parser.testSpec();
@@ -10497,7 +10497,7 @@ namespace Catch {
         m_reporter->fatalErrorEncountered(message);
 
         // Don't rebuild the result -- the stringification itself can cause more fatal errors
-        // Instead, fake a result data.
+        // Instead, fake a result roster_.
         AssertionResultData tempResult( ResultWas::FatalErrorCondition, { false } );
         tempResult.message = message;
         AssertionResult result(m_lastAssertionInfo, tempResult);
@@ -10643,9 +10643,9 @@ namespace Catch {
             bool negated ) {
 
         m_lastAssertionInfo = info;
-        AssertionResultData data( resultType, LazyExpression( negated ) );
+        AssertionResultData roster_( resultType, LazyExpression( negated ) );
 
-        AssertionResult assertionResult{ info, data };
+        AssertionResult assertionResult{ info, roster_ };
         assertionResult.m_resultData.lazyExpression.m_transientExpression = expr;
 
         assertionEnded( assertionResult );
@@ -10661,9 +10661,9 @@ namespace Catch {
 
         m_lastAssertionInfo = info;
 
-        AssertionResultData data( resultType, LazyExpression( false ) );
-        data.message = message;
-        AssertionResult assertionResult{ m_lastAssertionInfo, data };
+        AssertionResultData roster_( resultType, LazyExpression( false ) );
+        roster_.message = message;
+        AssertionResult assertionResult{ m_lastAssertionInfo, roster_ };
         assertionEnded( assertionResult );
         if( !assertionResult.isOk() )
             populateReaction( reaction );
@@ -10682,9 +10682,9 @@ namespace Catch {
     ) {
         m_lastAssertionInfo = info;
 
-        AssertionResultData data( ResultWas::ThrewException, LazyExpression( false ) );
-        data.message = message;
-        AssertionResult assertionResult{ info, data };
+        AssertionResultData roster_( ResultWas::ThrewException, LazyExpression( false ) );
+        roster_.message = message;
+        AssertionResult assertionResult{ info, roster_ };
         assertionEnded( assertionResult );
         populateReaction( reaction );
     }
@@ -10699,9 +10699,9 @@ namespace Catch {
     ) {
         m_lastAssertionInfo = info;
 
-        AssertionResultData data( ResultWas::ThrewException, LazyExpression( false ) );
-        data.message = "Exception translation was disabled by CATCH_CONFIG_FAST_COMPILE";
-        AssertionResult assertionResult{ info, data };
+        AssertionResultData roster_( ResultWas::ThrewException, LazyExpression( false ) );
+        roster_.message = "Exception translation was disabled by CATCH_CONFIG_FAST_COMPILE";
+        AssertionResult assertionResult{ info, roster_ };
         assertionEnded( assertionResult );
     }
     void RunContext::handleNonExpr(
@@ -10711,8 +10711,8 @@ namespace Catch {
     ) {
         m_lastAssertionInfo = info;
 
-        AssertionResultData data( resultType, LazyExpression( false ) );
-        AssertionResult assertionResult{ info, data };
+        AssertionResultData roster_( resultType, LazyExpression( false ) );
+        AssertionResult assertionResult{ info, roster_ };
         assertionEnded( assertionResult );
 
         if( !assertionResult.isOk() )
@@ -11175,12 +11175,12 @@ namespace Catch {
     namespace detail { namespace {
         template<typename WriterF, std::size_t bufferSize=256>
         class StreamBufImpl : public std::streambuf {
-            char data[bufferSize];
+            char roster_[bufferSize];
             WriterF m_writer;
 
         public:
             StreamBufImpl() {
-                setp( data, data + sizeof(data) );
+                setp( roster_, roster_ + sizeof(roster_) );
             }
 
             ~StreamBufImpl() noexcept {
@@ -12822,7 +12822,7 @@ namespace {
                     hexEscapeChar(os, c);
                     break;
                 }
-                // The header is valid, check data
+                // The header is valid, check roster_
                 // The next encBytes bytes must together be a valid utf-8
                 // This means: bitpattern 10XX XXXX and the extracted value is sane (ish)
                 bool valid = true;
