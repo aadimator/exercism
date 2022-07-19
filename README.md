@@ -1,2 +1,3 @@
 # exercism
-My code for exercism.io exercises
+
+My code for [exercism](https://exercism.org/) exercises.
